@@ -402,8 +402,9 @@ public:
     }
     char  szUserName[1024] = {0};
     DWORD dwSize = 1024;
-    GetUserNameA(szUserName, &dwSize);
-    this->m_parent->OnSymInit(buf, symOptions, szUserName);
+    //glider1-compile
+    //GetUserNameA(szUserName, &dwSize);
+    //this->m_parent->OnSymInit(buf, symOptions, szUserName);
 
     return TRUE;
   }

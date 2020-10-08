@@ -2838,6 +2838,27 @@ CvInterfaceModeInfo* CvGlobals::getInterfaceModeInfo(InterfaceModeTypes e)
 		return NULL;
 }
 
+//glider1-initialise
+void CvGlobals::setUNHAPPY_THRESHOLD(int iUnhappy)
+{
+	m_iUNHAPPY_THRESHOLD = iUnhappy;
+	if (m_iUNHAPPY_THRESHOLD <= 0) m_iUNHAPPY_THRESHOLD = -1;
+	if (m_iUNHAPPY_THRESHOLD >= 100) m_iUNHAPPY_THRESHOLD = 101;
+}
+void CvGlobals::setVERY_UNHAPPY_THRESHOLD(int iUnhappy)
+{
+	m_iVERY_UNHAPPY_THRESHOLD = iUnhappy;
+	if (m_iVERY_UNHAPPY_THRESHOLD <= 0) m_iVERY_UNHAPPY_THRESHOLD = -1;
+	if (m_iVERY_UNHAPPY_THRESHOLD >= 100) m_iVERY_UNHAPPY_THRESHOLD = 101;
+}
+void CvGlobals::setSUPER_UNHAPPY_THRESHOLD(int iUnhappy)
+{
+	m_iSUPER_UNHAPPY_THRESHOLD = iUnhappy;
+	if (m_iSUPER_UNHAPPY_THRESHOLD <= 0) m_iSUPER_UNHAPPY_THRESHOLD = -1;
+	if (m_iSUPER_UNHAPPY_THRESHOLD >= 100) m_iSUPER_UNHAPPY_THRESHOLD = 101;
+}
+//end
+
 bool CvGlobals::getLogging()
 {
 	return m_bLogging;

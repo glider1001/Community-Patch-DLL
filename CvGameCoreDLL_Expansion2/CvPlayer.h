@@ -658,6 +658,9 @@ public:
 #endif
 	int GetHappinessForGAP() const;
 	int GetExcessHappiness() const;
+	//glider1-dark age
+	int GetExcessHappinessThreshold() const;
+
 	bool IsEmpireUnhappy() const;
 	bool IsEmpireVeryUnhappy() const;
 	bool IsEmpireSuperUnhappy() const;

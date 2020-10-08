@@ -1328,6 +1328,10 @@ int CvBuildingProductionAI::CheckBuildingBuildSanity(BuildingTypes eBuilding, in
 	if (iBonus <= 0)
 		return 1;
 
+	//glider1-balance don't build for happiness sake during extreme dark age
+	if (bGoodforHappiness && GC.getGame().getDarkAgeUnhappyThresholdMod() > 20)
+		return 0;
+
 	//iValue is the compunded value of the items.
 	iValue += iBonus;
 

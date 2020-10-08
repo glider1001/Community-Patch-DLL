@@ -51,14 +51,14 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'" />
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">C:\Program Files (x86)\Windows Kits\8.1\bin\x86;$(ExecutablePath)</ExecutablePath>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">C:\Program Files (x86)\Windows Kits\8.1\bin\x86;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">C:\Program Files (x86)\Windows Kits\8.1\Include\shared;C:\Program Files (x86)\Windows Kits\8.1\Include\um;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvLocalization\include;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvGameDatabase\include;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\ThirdPartyLibs\Lua51\include;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvGameCoreDLL_Expansion2;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\FirePlace\include\FireWorks;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\FirePlace\include\;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvGameCoreDLLUtil\include;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvWorldBuilderMap\include;C:\Program Files (x86)\Windows Kits\8.1\Include\shared;C:\Program Files (x86)\Windows Kits\8.1\Include\um;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">C:\Program Files (x86)\Windows Kits\8.1\Include\shared;C:\Program Files (x86)\Windows Kits\8.1\Include\um;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">..\ThirdPartyLibs;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">..\ThirdPartyLibs;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">CvGameCore_Expansion2</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">CvGameCore_Expansion2</TargetName>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">$(OutDir)</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">$(OutDir)</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">C:\Users\harry\Documents\Firaxis ModBuddy\ZZ Change VP Options\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Mod2|Win32'">C:\Users\harry\Documents\Firaxis ModBuddy\ZZ Change VP Options\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Mod|Win32'">
     <ClCompile>
@@ -84,7 +84,7 @@
       <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>CvWorldBuilderMapWin32.lib;CvGameCoreDLLUtilWin32.lib;CvLocalizationWin32.lib;CvGameDatabaseWin32.lib;FireWorksWin32.lib;FLuaWin32.lib;lua51_Win32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvWorldBuilderMap\lib\CvWorldBuilderMapWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvGameCoreDLLUtil\lib\CvGameCoreDLLUtilWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvLocalization\lib\CvLocalizationWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\CvGameDatabase\lib\CvGameDatabaseWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\FirePlace\lib\FireWorksWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\FirePlace\lib\FLuaWin32.lib;C:\Users\Harry\Documents\GitHub\Community-Patch-DLL\ThirdPartyLibs\Lua51\lib\lua51_Win32.lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Lib\winmm.lib;</AdditionalDependencies>
       <OutputFile>$(OutDir)\CvGameCore_Expansion2.dll</OutputFile>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(SolutionDir)\CvWorldBuilderMap\lib\;$(SolutionDir)\CvGameCoreDLLUtil\lib\;$(SolutionDir)\CvLocalization\lib\;$(SolutionDir)\CvGameDatabase\lib\;$(SolutionDir)FirePlace\lib\;$(SolutionDir)ThirdPartyLibs\Lua51\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

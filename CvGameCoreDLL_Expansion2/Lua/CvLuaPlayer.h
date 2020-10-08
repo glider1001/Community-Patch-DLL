@@ -345,6 +345,7 @@ protected:
 	static int lGetHappinessForGAP(lua_State* L);
 
 	static int lGetExcessHappiness(lua_State* L);
+
 	static int lGetHappinessRatioRawPercent(lua_State* L);
 
 	static int lIsEmpireUnhappy(lua_State* L);

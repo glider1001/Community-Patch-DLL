@@ -4095,8 +4095,9 @@ int CvLuaGame::lDoSpawnFreeCity(lua_State* L)
 int CvLuaGame::lDeleteCSV(lua_State * L)
 {
 	const char* szCSVFilename = lua_tostring(L, 2);
-
-	CvLoggerCSV::DeleteCSV(szCSVFilename);
+	
+	//glider1-compile
+	//CvLoggerCSV::DeleteCSV(szCSVFilename);
 
 	return 1;
 }
@@ -4106,7 +4107,8 @@ int CvLuaGame::lWriteCSV(lua_State * L)
 	const char* szCSVFilename = lua_tostring(L, 2);
 	const char* szCSVLine = lua_tostring(L, 3);
 
-	CvLoggerCSV::WriteCSVLog(szCSVFilename, szCSVLine);
+	//glider1-compile
+	//CvLoggerCSV::WriteCSVLog(szCSVFilename, szCSVLine);
 
 	return 1;
 }

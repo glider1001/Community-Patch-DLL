@@ -230,6 +230,12 @@ public:
 	std::vector<CvInterfaceModeInfo*>& getInterfaceModeInfo();
 	CvInterfaceModeInfo* getInterfaceModeInfo(InterfaceModeTypes e);
 
+	//glider1-initialise
+	void setUNHAPPY_THRESHOLD(int iUnhappy);
+	void setVERY_UNHAPPY_THRESHOLD(int iUnhappy);
+	void setSUPER_UNHAPPY_THRESHOLD(int iUnhappy);
+	//end
+
 	bool getLogging();
 	void setLogging(bool bEnable);
 

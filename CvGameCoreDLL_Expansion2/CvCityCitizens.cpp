@@ -1125,6 +1125,9 @@ bool CvCityCitizens::IsForcedAvoidGrowth()
 
 void CvCityCitizens::SetForcedAvoidGrowth(bool bAvoidGrowth, bool bReallocate)
 {
+	//glider1-balance can't stop population growth
+	bAvoidGrowth = false;
+
 	if (m_bForceAvoidGrowth != bAvoidGrowth)
 	{
 		m_bForceAvoidGrowth = bAvoidGrowth;

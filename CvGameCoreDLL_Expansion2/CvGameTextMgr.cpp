@@ -20,7 +20,9 @@
 
 void CvGameTextMgr::setYearStr(CvString& strString, int iGameTurn, bool bSave, CalendarTypes eCalendar, int iStartYear, GameSpeedTypes eSpeed)
 {
-	int iTurnYear = getTurnYearForGame(iGameTurn, iStartYear, eCalendar, eSpeed);
+	//glider1-flavour adjust turn clock
+	int iTurnYear = getTurnYearForGame(iGameTurn, iStartYear, eCalendar, eSpeed) - 100;
+	//int iTurnYear = getTurnYearForGame(iGameTurn, iStartYear, eCalendar, eSpeed);
 
 	if(iTurnYear < 0)
 	{

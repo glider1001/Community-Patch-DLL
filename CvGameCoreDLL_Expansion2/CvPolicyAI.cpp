@@ -4813,7 +4813,8 @@ int CvPolicyAI::WeighPolicy(CvPlayer* pPlayer, PolicyTypes ePolicy)
 				}
 			}
 		}
-		if (ePolicyBranch == (PolicyBranchTypes)GC.getInfoTypeForString("POLICY_BRANCH_PATRONAGE", true))
+		//glider1-balance policy selection can't know when city states will spawn
+		/*if (ePolicyBranch == (PolicyBranchTypes)GC.getInfoTypeForString("POLICY_BRANCH_PATRONAGE", true))
 		{
 			if (GC.getGame().GetNumMinorCivsAlive() <= 0)
 			{
@@ -4823,7 +4824,7 @@ int CvPolicyAI::WeighPolicy(CvPlayer* pPlayer, PolicyTypes ePolicy)
 			{
 				iWeight /= 5;
 			}
-		}
+		}*/
 	}
 	// Does this policy finish a branch for us?
 	if (m_pCurrentPolicies->WillFinishBranchIfAdopted(ePolicy))

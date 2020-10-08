@@ -15848,7 +15848,20 @@ void CvUnit::SetBaseCombatStrength(int iCombat)
 //	--------------------------------------------------------------------------------
 int CvUnit::GetBaseCombatStrength() const
 {
-	return m_iBaseCombat;
+	//glider1-balance stronger units
+	int iStrength = m_iBaseCombat;
+	int UNIT_SUPPLY_COMPENSATION_PERCENT = 125;
+	int AI_STRENGTH_BONUS = 200 - GC.getGame().getHandicapInfo().getAIUnitCostPercent();
+
+	if (!isBarbarian())
+	{
+		iStrength = iStrength * UNIT_SUPPLY_COMPENSATION_PERCENT / 100;
+	}
+	if (!isHuman()) 
+		iStrength = iStrength * AI_STRENGTH_BONUS / 100;
+
+	return iStrength;
+	//end
 }
 
 int CvUnit::GetBestAttackStrength() const
@@ -16660,7 +16673,20 @@ int CvUnit::GetBaseRangedCombatStrength() const
 	VALIDATE_OBJECT
 
 #if defined(MOD_API_EXTENSIONS)
-	return m_iBaseRangedCombat;
+	//glider1-balance stronger units
+	int iStrength = m_iBaseRangedCombat;
+	int UNIT_SUPPLY_COMPENSATION_PERCENT = 125;
+	int AI_STRENGTH_BONUS = 200 - GC.getGame().getHandicapInfo().getAIUnitCostPercent();
+
+	if (!isBarbarian())
+	{
+		iStrength = iStrength * UNIT_SUPPLY_COMPENSATION_PERCENT / 100;
+	}
+	if (!isHuman()) 
+		iStrength = iStrength * AI_STRENGTH_BONUS / 100;
+
+	return iStrength;
+	//end
 #else
 	return m_pUnitInfo->GetRangedCombat();
 #endif

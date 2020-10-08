@@ -1145,6 +1145,10 @@ void CvGame::uninit()
 	m_iNumVictoryVotesExpected = 0;
 	m_iVotesNeededForDiploVictory = 0;
 	m_iMapScoreMod = 0;
+	//glider1-initialise
+	m_iDarkAgeUnhappyThresholdMod = 0;
+	m_iDarkAgeSpare1 = 0;
+	m_iDarkAgeSpare2 = 0;
 
 	m_uiInitialTime = 0;
 
@@ -1975,6 +1979,127 @@ void CvGame::updateScore(bool bForce)
 		setTeamScore(eBestTeam, iBestScore);
 	}
 }
+
+//glider1-dark age main function
+void CvGame::darkAge()
+{
+	CvPlayer& curPlayer = GET_PLAYER(getActivePlayer());
+	CvString strBuffer = "";
+	CvString strSummary = "";
+	bool bNotify = false;
+	int HIGH_PROB = 80;
+	int LOW_PROB = 20;
+	int iUNHAPPY_THRESHOLD			= 50;
+	int iVERY_UNHAPPY_THRESHOLD		= 35;
+	int iSUPER_UNHAPPY_THRESHOLD	= 20;
+
+	int iDarkAgeTurn = 14 + getGameSpeedInfo().getGoldPercent() / 10; //14+6Q, 14+10S, 14+15E, 14+30M
+	int iNumCityStatesNeeded = countMajorCivsAlive() * 2 - GetNumMinorCivsAlive();
+	if (iNumCityStatesNeeded <= 0) m_iDarkAgeUnhappyThresholdMod = 0;
+
+	if (getElapsedGameTurns() % iDarkAgeTurn == 0 && iNumCityStatesNeeded > 0)
+	{
+		int iProbability = 0;
+
+		switch (getCurrentEra())
+		{
+			//ancient
+			case 0:
+				iProbability = 0;
+				break;
+			//classical
+			case 1:
+				iProbability = LOW_PROB;
+				break;
+			//medieval
+			case 2:
+				iProbability = HIGH_PROB;
+				break;
+			//renaissance
+			case 3:
+				iProbability = LOW_PROB;
+				break;
+			//industrial
+			case 4:
+				iProbability = HIGH_PROB;
+				break;
+			//modern
+			case 5:
+				iProbability = LOW_PROB;
+				break;
+			//atomic
+			case 6:
+				iProbability = LOW_PROB;
+				break;
+			//information
+			case 7:
+				iProbability = HIGH_PROB;
+				break;
+			default:
+				iProbability = 50;
+				break;
+		}
+
+		int iThresholdDark = curPlayer.getHandicapInfo().getAIUnhappinessPercent() * iNumCityStatesNeeded;
+		if (iProbability > getJonRandNumVA(100,""))
+		{
+			m_iDarkAgeUnhappyThresholdMod = +iThresholdDark;
+		} else 
+		{ 
+			m_iDarkAgeUnhappyThresholdMod = -iThresholdDark;
+		}
+
+		bNotify = true;
+	} // end dark age turn
+
+	// every turn do:
+	if (isDarkAgeActive())
+	{
+		GC.setUNHAPPY_THRESHOLD(iUNHAPPY_THRESHOLD + m_iDarkAgeUnhappyThresholdMod);
+		GC.setVERY_UNHAPPY_THRESHOLD(iVERY_UNHAPPY_THRESHOLD + m_iDarkAgeUnhappyThresholdMod);
+		GC.setSUPER_UNHAPPY_THRESHOLD(iSUPER_UNHAPPY_THRESHOLD + m_iDarkAgeUnhappyThresholdMod);
+	} else
+	{
+		GC.setUNHAPPY_THRESHOLD(iUNHAPPY_THRESHOLD);
+		GC.setVERY_UNHAPPY_THRESHOLD(iVERY_UNHAPPY_THRESHOLD);
+		GC.setSUPER_UNHAPPY_THRESHOLD(iSUPER_UNHAPPY_THRESHOLD);		
+	}
+
+	if (bNotify)
+	{
+		CvNotifications* pNotifications = curPlayer.GetNotifications();
+		if(pNotifications)
+		{
+			char formatBuf[128] = {"\0"};
+
+			if (getDarkAgeUnhappyThresholdMod() < 0)
+			{
+				strSummary = GetLocalizedText("AGE OF LIGHT BEGINS");
+				strBuffer = GetLocalizedText("The world is in an age of light: ");
+				_i64toa_s(getDarkAgeUnhappyThresholdMod(), formatBuf, 127, 10); strBuffer += formatBuf;
+				pNotifications->Add(NOTIFICATION_GENERIC, strBuffer, strSummary,-1,-1,-1,-1);
+			}
+			if (getDarkAgeUnhappyThresholdMod() > 0)
+			{
+				strSummary = GetLocalizedText("AGE OF DARKNESS BEGINS");
+				strBuffer = GetLocalizedText("The world is in an age of darkness: ");
+				_i64toa_s(getDarkAgeUnhappyThresholdMod(), formatBuf, 127, 10); strBuffer += formatBuf;
+				pNotifications->Add(NOTIFICATION_GENERIC, strBuffer, strSummary,-1,-1,-1,-1);
+			}
+		} // end notifications
+	}
+} // end darkAge
+
+int CvGame::getDarkAgeUnhappyThresholdMod()
+{
+	return m_iDarkAgeUnhappyThresholdMod;
+}
+
+bool CvGame::isDarkAgeActive()
+{
+	return abs(m_iDarkAgeUnhappyThresholdMod) > 10;//percent
+}
+//end
 
 //	--------------------------------------------------------------------------------
 /// How does the size of the map affect how some of the score components are weighted?
@@ -8585,6 +8710,9 @@ void CvGame::doTurn()
 
 	updateScore();
 
+	//glider1-initialise
+	darkAge();
+
 	m_kGameDeals.DoTurn();
 
 	for(int iI = 0; iI < MAX_TEAMS; iI++)
@@ -11574,6 +11702,10 @@ void CvGame::Read(FDataStream& kStream)
 	kStream >> m_iNumVictoryVotesExpected;
 	kStream >> m_iVotesNeededForDiploVictory;
 	kStream >> m_iMapScoreMod;
+	//glider1-initialise
+	kStream >> m_iDarkAgeUnhappyThresholdMod;
+	kStream >> m_iDarkAgeSpare1;
+	kStream >> m_iDarkAgeSpare2;
 
 	// m_uiInitialTime not saved
 
@@ -11842,6 +11974,10 @@ void CvGame::Write(FDataStream& kStream) const
 	kStream << m_iNumVictoryVotesExpected;
 	kStream << m_iVotesNeededForDiploVictory;
 	kStream << m_iMapScoreMod;
+	//glider1-initialise
+	kStream << m_iDarkAgeUnhappyThresholdMod;
+	kStream << m_iDarkAgeSpare1;
+	kStream << m_iDarkAgeSpare2;
 
 	// m_uiInitialTime not saved
 

@@ -3662,7 +3662,8 @@ bool EconomicAIHelpers::IsTestStrategy_EnoughExpansion(EconomicAIStrategyTypes e
 		return false;
 	}
 
-	if(pPlayer->IsEmpireVeryUnhappy())
+	//glider1-balance expand when unhappy to create city states
+	if(pPlayer->IsEmpireVeryUnhappy() && !GC.getGame().isDarkAgeActive())
 	{
 		return true;
 	}
@@ -3902,8 +3903,9 @@ bool EconomicAIHelpers::IsTestStrategy_FoundCity(EconomicAIStrategyTypes eStrate
 		return false;
 
 	// Won't be allowed to settle ...
-	if (pPlayer->IsEmpireVeryUnhappy())
-		return false;
+	//glider1-balance expand when unhappy to create city states
+	//if (pPlayer->IsEmpireVeryUnhappy())
+		//return false;
 
 	// Look at map for loose settlers
 	std::vector<CvUnit*> vSettlers;

@@ -69,6 +69,11 @@ public:
 
 	void update();
 	void updateScore(bool bForce = false);
+	//glider1-initialise
+	void darkAge();
+	int getDarkAgeUnhappyThresholdMod();
+	bool isDarkAgeActive();
+	//end
 
 	int GetMapScoreMod() const;
 
@@ -787,6 +792,10 @@ protected:
 	int m_iNumVictoryVotesExpected;
 	int m_iVotesNeededForDiploVictory;
 	int m_iMapScoreMod;
+	//glider1-initialise
+	int m_iDarkAgeUnhappyThresholdMod;
+	int m_iDarkAgeSpare1;
+	int m_iDarkAgeSpare2;
 
 	unsigned int m_uiInitialTime;
 

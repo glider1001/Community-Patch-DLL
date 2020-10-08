@@ -3867,7 +3867,9 @@ int CvLuaPlayer::lGetHappinessForGAP(lua_State* L)
 //int GetExcessHappiness();
 int CvLuaPlayer::lGetExcessHappiness(lua_State* L)
 {
-	return BasicLuaMethod(L, &CvPlayerAI::GetExcessHappiness);
+	//glider1-dark age
+	return BasicLuaMethod(L, &CvPlayerAI::GetExcessHappinessThreshold);
+	//return BasicLuaMethod(L, &CvPlayerAI::GetExcessHappiness);
 }
 
 //------------------------------------------------------------------------------

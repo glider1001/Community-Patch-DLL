@@ -300,8 +300,9 @@ void CvDllNetMessageHandler::ResponseDiplomacyFromUI(PlayerTypes ePlayer, Player
 		return;
 
 	// hijacks message for MP events since it has a few args and is sent to everyone
-	if (NetMessageExt::Process::FromDiplomacyFromUI(ePlayer, eOtherPlayer, eEvent, iArg1, iArg2))
-		return;
+	//glider1-compile
+	//if (NetMessageExt::Process::FromDiplomacyFromUI(ePlayer, eOtherPlayer, eEvent, iArg1, iArg2))
+	//	return;
 	GET_PLAYER(eOtherPlayer).GetDiplomacyAI()->DoFromUIDiploEvent(ePlayer, eEvent, iArg1, iArg2);
 }
 //------------------------------------------------------------------------------

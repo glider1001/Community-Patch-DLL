@@ -1347,16 +1347,19 @@ int CvUnitProductionAI::CheckUnitBuildSanity(UnitTypes eUnit, bool bForOperation
 		{
 			iFlavorExpansion -= 100;
 		}
-
-		if (kPlayer.IsEmpireUnhappy())
+		
+		//glider1-balance expand when unhappy to create citystates
+		if (kPlayer.IsEmpireUnhappy() && !GC.getGame().isDarkAgeActive())
 		{
 			iFlavorExpansion -= 25;
 
-			if (kPlayer.IsEmpireVeryUnhappy())
+			//glider1-balance expand when unhappy to create citystates
+			if (kPlayer.IsEmpireVeryUnhappy() && !GC.getGame().isDarkAgeActive())
 			{
 				iFlavorExpansion -= 50;
 				
-				if (kPlayer.IsEmpireSuperUnhappy())
+				//glider1-balance expand when unhappy to create citystates
+				if (kPlayer.IsEmpireSuperUnhappy() && !GC.getGame().isDarkAgeActive())
 					iFlavorExpansion -= 50;
 			}
 		}

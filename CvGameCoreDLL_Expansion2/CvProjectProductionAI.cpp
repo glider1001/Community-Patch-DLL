@@ -314,6 +314,10 @@ int CvProjectProductionAI::CheckProjectBuildSanity(ProjectTypes eProject, int iT
 	if (bGoodforHappiness && !GET_PLAYER(m_pCity->getOwner()).IsEmpireUnhappy())
 		iTempWeight /= 50;
 
+	//glider1-balance don't build for happiness sake during extreme dark age
+	if (bGoodforHappiness && GC.getGame().getDarkAgeUnhappyThresholdMod() > 20)
+		return 0;
+
 	return iTempWeight;
 }
 #endif

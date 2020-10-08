@@ -8805,7 +8805,8 @@ void CvPlayer::DoEventSyncChoices(EventChoiceTypes eEventChoice, CvCity* pCity)
 void CvPlayer::DoEventChoice(EventChoiceTypes eEventChoice, EventTypes eEvent, bool bSendMsg)
 {
 	if (GC.getGame().isNetworkMultiPlayer() && bSendMsg && isHuman()) {
-		NetMessageExt::Send::DoEventChoice(GetID(), eEventChoice, eEvent);
+		//glider1-compile
+		//NetMessageExt::Send::DoEventChoice(GetID(), eEventChoice, eEvent);
 		return;
 	}
 	if(eEventChoice != NO_EVENT_CHOICE)
@@ -14501,8 +14502,10 @@ bool CvPlayer::canFoundExt(int iX, int iY, bool bIgnoreDistanceToExistingCities,
 #endif
 	
 	// Settlers cannot found cities while empire is very unhappy
-	if(!bIgnoreHappiness && IsEmpireVeryUnhappy())
-		return false;
+	//glider1-balance expand when unhappy to create city states
+	bIgnoreHappiness;
+	//if(!bIgnoreHappiness && IsEmpireVeryUnhappy())
+		//return false;
 
 	return GC.getGame().GetSettlerSiteEvaluator()->CanFound(pPlot, this, bIgnoreDistanceToExistingCities);
 }
@@ -17780,6 +17783,10 @@ int CvPlayer::GetNumUnitsSupplied() const
 			iFreeUnits /= 100;
 		}
 
+		//glider1-balance less unit supply
+		iFreeUnits = iFreeUnits * 75 / 100;
+		//end
+
 		m_iNumUnitsSuppliedCached = max(0,iFreeUnits);
 	}
 
@@ -20674,6 +20681,21 @@ int CvPlayer::GetExcessHappiness() const
 	return m_iHappinessTotal;
 }
 
+//glider1-dark age
+/// How much over our unhappiness threshold are we?
+int CvPlayer::GetExcessHappinessThreshold() const
+{
+	if(isMinorCiv() || isBarbarian() || (getNumCities() == 0) || GC.getGame().isOption(GAMEOPTION_NO_HAPPINESS))
+	{
+		if (MOD_BALANCE_CORE_HAPPINESS_NATIONAL)
+			return GC.getUNHAPPY_THRESHOLD();
+		else
+			return 0;
+	}
+
+	return m_iHappinessTotal - GC.getUNHAPPY_THRESHOLD();
+}
+
 //	--------------------------------------------------------------------------------
 /// Has the player passed the Happiness limit?
 bool CvPlayer::IsEmpireUnhappy() const
@@ -21228,142 +21250,203 @@ void CvPlayer::DoCityRevolt()
 #if defined(MOD_BALANCE_CORE)
 		GAMEEVENTINVOKE_HOOK(GAMEEVENT_CityFlipped, pMostUnhappyCity, eRecipient, pMostUnhappyCity->getOwner());
 #endif
-		if (!GET_PLAYER(eRecipient).isAlive())
-		{ 
-			if (GET_PLAYER(eRecipient).isEverAlive())
+		//glider1-dark age just create city states
+		if (GC.getGame().isDarkAgeActive())
+		{
+			const CvString strCityName = pMostUnhappyCity->getName();
+			const char* charCityName = pMostUnhappyCity->getName().GetCString();
+			if (GC.getGame().CreateFreeCityPlayer(pMostUnhappyCity))
 			{
-				PlayerTypes eOldPlayer = pMostUnhappyCity->getOriginalOwner();
-				if (eOldPlayer != NO_PLAYER && !GET_PLAYER(eOldPlayer).isAlive())
+				CvPlayer &kRecipient = GET_PLAYER(eRecipient);
+				for (int iNotifyLoop = 0; iNotifyLoop < MAX_MAJOR_CIVS; ++iNotifyLoop){
+					PlayerTypes eNotifyPlayer = (PlayerTypes)iNotifyLoop;
+
+					if (eNotifyPlayer == NO_PLAYER)
+						continue;
+
+					CvPlayerAI& kCurNotifyPlayer = GET_PLAYER(eNotifyPlayer);
+
+					if (!kCurNotifyPlayer.isAlive())
+						continue;
+
+					if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(getTeam()))
+						continue;
+
+					if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(kRecipient.getTeam()))
+						continue;
+
+					CvNotifications* pNotifications = kCurNotifyPlayer.GetNotifications();
+					if (pNotifications)
+					{
+						Localization::String strMessage;
+						if (eNotifyPlayer == GetID())
+						{
+							strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_CITY_REVOLT_FREE_CITY", strCityName, kRecipient.getCivilizationShortDescription());
+						}
+						else
+						{
+							strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT_FREE_CITY", getCivilizationAdjective(), strCityName, kRecipient.getCivilizationShortDescription());
+						}
+						Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_CITY_REVOLT_SUMMARY");
+						pNotifications->Add(NOTIFICATION_CITY_REVOLT, strMessage.toUTF8(), strSummary.toUTF8(), GET_PLAYER(eRecipient).getCapitalCity()->getX(), GET_PLAYER(eRecipient).getCapitalCity()->getY(), -1);
+					}
+				}
+
+				if (GC.getLogging() && GC.getAILogging() && pMostUnhappyCity != NULL)
 				{
-					DoRevolutionPlayer(eOldPlayer, pMostUnhappyCity->GetID());
+					CvString playerName;
+					FILogFile* pLog;
+					CvString strBaseString;
+					CvString strOutBuf;
+					CvString strFileName = "CityRevolutions.csv";
+					playerName = getCivilizationShortDescription();
+					pLog = LOGFILEMGR.GetLog(strFileName, FILogFile::kDontTimeStamp);
+					strBaseString.Format("%03d, ", GC.getGame().getElapsedGameTurns());
+					strBaseString += playerName + ", ";
+					strOutBuf.Format("Defection! %s ceded to new FREE CITY of %s", charCityName, kRecipient.getName());
+					strBaseString += strOutBuf;
+					pLog->Msg(strBaseString);
+				}
+			}
+		} else // glider1-dark age end not dark age so treat revolt normally from here
+		{
+			if (!GET_PLAYER(eRecipient).isAlive())
+			{ 
+				if (GET_PLAYER(eRecipient).isEverAlive())
+				{
+					PlayerTypes eOldPlayer = pMostUnhappyCity->getOriginalOwner();
+					if (eOldPlayer != NO_PLAYER && !GET_PLAYER(eOldPlayer).isAlive())
+					{
+						DoRevolutionPlayer(eOldPlayer, pMostUnhappyCity->GetID());
+					}
+				}
+				else
+				{
+					const CvString strCityName = pMostUnhappyCity->getName();
+					const char* charCityName = pMostUnhappyCity->getName().GetCString();
+					if (GC.getGame().CreateFreeCityPlayer(pMostUnhappyCity))
+					{
+						CvPlayer &kRecipient = GET_PLAYER(eRecipient);
+						for (int iNotifyLoop = 0; iNotifyLoop < MAX_MAJOR_CIVS; ++iNotifyLoop){
+							PlayerTypes eNotifyPlayer = (PlayerTypes)iNotifyLoop;
+
+							if (eNotifyPlayer == NO_PLAYER)
+								continue;
+
+							CvPlayerAI& kCurNotifyPlayer = GET_PLAYER(eNotifyPlayer);
+
+							if (!kCurNotifyPlayer.isAlive())
+								continue;
+
+							if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(getTeam()))
+								continue;
+
+							if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(kRecipient.getTeam()))
+								continue;
+
+							CvNotifications* pNotifications = kCurNotifyPlayer.GetNotifications();
+							if (pNotifications)
+							{
+								Localization::String strMessage;
+								if (eNotifyPlayer == GetID())
+								{
+									strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_CITY_REVOLT_FREE_CITY", strCityName, kRecipient.getCivilizationShortDescription());
+								}
+								else
+								{
+									strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT_FREE_CITY", getCivilizationAdjective(), strCityName, kRecipient.getCivilizationShortDescription());
+								}
+								Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_CITY_REVOLT_SUMMARY");
+								pNotifications->Add(NOTIFICATION_CITY_REVOLT, strMessage.toUTF8(), strSummary.toUTF8(), GET_PLAYER(eRecipient).getCapitalCity()->getX(), GET_PLAYER(eRecipient).getCapitalCity()->getY(), -1);
+							}
+						}
+
+						if (GC.getLogging() && GC.getAILogging() && pMostUnhappyCity != NULL)
+						{
+							CvString playerName;
+							FILogFile* pLog;
+							CvString strBaseString;
+							CvString strOutBuf;
+							CvString strFileName = "CityRevolutions.csv";
+							playerName = getCivilizationShortDescription();
+							pLog = LOGFILEMGR.GetLog(strFileName, FILogFile::kDontTimeStamp);
+							strBaseString.Format("%03d, ", GC.getGame().getElapsedGameTurns());
+							strBaseString += playerName + ", ";
+							strOutBuf.Format("Defection! %s ceded to new FREE CITY of %s", charCityName, kRecipient.getName());
+							strBaseString += strOutBuf;
+							pLog->Msg(strBaseString);
+						}
+					}
 				}
 			}
 			else
 			{
-				const CvString strCityName = pMostUnhappyCity->getName();
-				const char* charCityName = pMostUnhappyCity->getName().GetCString();
-				if (GC.getGame().CreateFreeCityPlayer(pMostUnhappyCity))
-				{
-					CvPlayer &kRecipient = GET_PLAYER(eRecipient);
-					for (int iNotifyLoop = 0; iNotifyLoop < MAX_MAJOR_CIVS; ++iNotifyLoop){
-						PlayerTypes eNotifyPlayer = (PlayerTypes)iNotifyLoop;
-
-						if (eNotifyPlayer == NO_PLAYER)
+				CvPlayer &kRecipient = GET_PLAYER(eRecipient);
+				for (int iNotifyLoop = 0; iNotifyLoop < MAX_MAJOR_CIVS; ++iNotifyLoop){
+					PlayerTypes eNotifyPlayer = (PlayerTypes)iNotifyLoop;
+					CvPlayerAI& kCurNotifyPlayer = GET_PLAYER(eNotifyPlayer);
+					CvNotifications* pNotifications = kCurNotifyPlayer.GetNotifications();
+					if (pNotifications)
+					{
+						if (!GET_TEAM(getTeam()).isHasMet(GET_PLAYER(eNotifyPlayer).getTeam()))
 							continue;
 
-						CvPlayerAI& kCurNotifyPlayer = GET_PLAYER(eNotifyPlayer);
-
-						if (!kCurNotifyPlayer.isAlive())
-							continue;
-
-						if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(getTeam()))
-							continue;
-
-						if (!GET_TEAM(kCurNotifyPlayer.getTeam()).isHasMet(kRecipient.getTeam()))
-							continue;
-
-						CvNotifications* pNotifications = kCurNotifyPlayer.GetNotifications();
-						if (pNotifications)
+						Localization::String strMessage;
+						if (eNotifyPlayer == GetID())
 						{
-							Localization::String strMessage;
-							if (eNotifyPlayer == GetID())
-							{
-								strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_CITY_REVOLT_FREE_CITY", strCityName, kRecipient.getCivilizationShortDescription());
-							}
-							else
-							{
-								strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT_FREE_CITY", getCivilizationAdjective(), strCityName, kRecipient.getCivilizationShortDescription());
-							}
-							Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_CITY_REVOLT_SUMMARY");
-							pNotifications->Add(NOTIFICATION_CITY_REVOLT, strMessage.toUTF8(), strSummary.toUTF8(), GET_PLAYER(eRecipient).getCapitalCity()->getX(), GET_PLAYER(eRecipient).getCapitalCity()->getY(), -1);
+							strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_CITY_REVOLT", pMostUnhappyCity->getName(), kRecipient.getCivilizationShortDescription());
 						}
-					}
-
-					if (GC.getLogging() && GC.getAILogging() && pMostUnhappyCity != NULL)
-					{
-						CvString playerName;
-						FILogFile* pLog;
-						CvString strBaseString;
-						CvString strOutBuf;
-						CvString strFileName = "CityRevolutions.csv";
-						playerName = getCivilizationShortDescription();
-						pLog = LOGFILEMGR.GetLog(strFileName, FILogFile::kDontTimeStamp);
-						strBaseString.Format("%03d, ", GC.getGame().getElapsedGameTurns());
-						strBaseString += playerName + ", ";
-						strOutBuf.Format("Defection! %s ceded to new FREE CITY of %s", charCityName, kRecipient.getName());
-						strBaseString += strOutBuf;
-						pLog->Msg(strBaseString);
-					}
-				}
-			}
-		}
-		else
-		{
-			CvPlayer &kRecipient = GET_PLAYER(eRecipient);
-			for (int iNotifyLoop = 0; iNotifyLoop < MAX_MAJOR_CIVS; ++iNotifyLoop){
-				PlayerTypes eNotifyPlayer = (PlayerTypes)iNotifyLoop;
-				CvPlayerAI& kCurNotifyPlayer = GET_PLAYER(eNotifyPlayer);
-				CvNotifications* pNotifications = kCurNotifyPlayer.GetNotifications();
-				if (pNotifications)
-				{
-					if (!GET_TEAM(getTeam()).isHasMet(GET_PLAYER(eNotifyPlayer).getTeam()))
-						continue;
-
-					Localization::String strMessage;
-					if (eNotifyPlayer == GetID())
-					{
-						strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_CITY_REVOLT", pMostUnhappyCity->getName(), kRecipient.getCivilizationShortDescription());
-					}
-					else if (GET_TEAM(getTeam()).isHasMet(GET_PLAYER(eNotifyPlayer).getTeam()))
-					{
-						strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT", getCivilizationAdjective(), pMostUnhappyCity->getName(), kRecipient.getCivilizationShortDescription());
-					}
-					else
-					{
-						strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT_UNKNOWN", kRecipient.getCivilizationShortDescription());
-					}
-					Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_CITY_REVOLT_SUMMARY");
-					pNotifications->Add(NOTIFICATION_CITY_REVOLT, strMessage.toUTF8(), strSummary.toUTF8(), pMostUnhappyCity->getX(), pMostUnhappyCity->getY(), -1);
-				}
-			}
-
-			if (GC.getLogging() && GC.getAILogging() && pMostUnhappyCity != NULL)
-			{
-				CvString playerName;
-				FILogFile* pLog;
-				CvString strBaseString;
-				CvString strOutBuf;
-				CvString strFileName = "CityRevolutions.csv";
-				playerName = getCivilizationShortDescription();
-				pLog = LOGFILEMGR.GetLog(strFileName, FILogFile::kDontTimeStamp);
-				strBaseString.Format("%03d, ", GC.getGame().getElapsedGameTurns());
-				strBaseString += playerName + ", ";
-				strOutBuf.Format("Defection! %s ceded to %s", pMostUnhappyCity->getName().GetCString(), kRecipient.getName());
-				strBaseString += strOutBuf;
-				pLog->Msg(strBaseString);
-			}
-
-			// get the plot before transferring ownership
-			CvPlot *pPlot = pMostUnhappyCity->plot();
-			kRecipient.acquireCity(pMostUnhappyCity, false/*bConquest*/, true/*bGift*/);
-			pMostUnhappyCity = NULL; //no longer valid
-
-			 // Move Units from player that don't belong here
-			if (pPlot->getNumUnits() > 0)
-			{
-				// Get the current list of units because we will possibly be moving them out of the plot's list
-				IDInfoVector currentUnits;
-				if (pPlot->getUnits(&currentUnits) > 0)
-				{
-					for (IDInfoVector::const_iterator itr = currentUnits.begin(); itr != currentUnits.end(); ++itr)
-					{
-						CvUnit* pLoopUnit = (CvUnit*)GetPlayerUnit(*itr);
-
-						if (pLoopUnit && pLoopUnit->getOwner() == GetID())
+						else if (GET_TEAM(getTeam()).isHasMet(GET_PLAYER(eNotifyPlayer).getTeam()))
 						{
-							pLoopUnit->finishMoves();
-							if (!pLoopUnit->jumpToNearestValidPlot())
-								pLoopUnit->kill(false);
+							strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT", getCivilizationAdjective(), pMostUnhappyCity->getName(), kRecipient.getCivilizationShortDescription());
+						}
+						else
+						{
+							strMessage = GetLocalizedText("TXT_KEY_NOTIFICATION_OTHER_PLAYER_CITY_REVOLT_UNKNOWN", kRecipient.getCivilizationShortDescription());
+						}
+						Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_CITY_REVOLT_SUMMARY");
+						pNotifications->Add(NOTIFICATION_CITY_REVOLT, strMessage.toUTF8(), strSummary.toUTF8(), pMostUnhappyCity->getX(), pMostUnhappyCity->getY(), -1);
+					}
+				}
+
+				if (GC.getLogging() && GC.getAILogging() && pMostUnhappyCity != NULL)
+				{
+					CvString playerName;
+					FILogFile* pLog;
+					CvString strBaseString;
+					CvString strOutBuf;
+					CvString strFileName = "CityRevolutions.csv";
+					playerName = getCivilizationShortDescription();
+					pLog = LOGFILEMGR.GetLog(strFileName, FILogFile::kDontTimeStamp);
+					strBaseString.Format("%03d, ", GC.getGame().getElapsedGameTurns());
+					strBaseString += playerName + ", ";
+					strOutBuf.Format("Defection! %s ceded to %s", pMostUnhappyCity->getName().GetCString(), kRecipient.getName());
+					strBaseString += strOutBuf;
+					pLog->Msg(strBaseString);
+				}
+
+				// get the plot before transferring ownership
+				CvPlot *pPlot = pMostUnhappyCity->plot();
+				kRecipient.acquireCity(pMostUnhappyCity, false/*bConquest*/, true/*bGift*/);
+				pMostUnhappyCity = NULL; //no longer valid
+
+				 // Move Units from player that don't belong here
+				if (pPlot->getNumUnits() > 0)
+				{
+					// Get the current list of units because we will possibly be moving them out of the plot's list
+					IDInfoVector currentUnits;
+					if (pPlot->getUnits(&currentUnits) > 0)
+					{
+						for (IDInfoVector::const_iterator itr = currentUnits.begin(); itr != currentUnits.end(); ++itr)
+						{
+							CvUnit* pLoopUnit = (CvUnit*)GetPlayerUnit(*itr);
+
+							if (pLoopUnit && pLoopUnit->getOwner() == GetID())
+							{
+								pLoopUnit->finishMoves();
+								if (!pLoopUnit->jumpToNearestValidPlot())
+									pLoopUnit->kill(false);
+							}
 						}
 					}
 				}

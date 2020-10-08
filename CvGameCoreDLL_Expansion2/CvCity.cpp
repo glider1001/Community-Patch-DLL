@@ -5985,7 +5985,8 @@ CvString CvCity::GetDisabledTooltip(CityEventChoiceTypes eChosenEventChoice)
 void CvCity::DoEventChoice(CityEventChoiceTypes eEventChoice, CityEventTypes eCityEvent, bool bSendMsg)
 {
 	if (GC.getGame().isNetworkMultiPlayer() && bSendMsg && GET_PLAYER(getOwner()).isHuman()) {
-		NetMessageExt::Send::DoCityEventChoice(getOwner(), GetID(), eEventChoice, eCityEvent);
+		//glider1-compile
+		//NetMessageExt::Send::DoCityEventChoice(getOwner(), GetID(), eEventChoice, eCityEvent);
 		return;
 	}
 	if(eEventChoice != NO_EVENT_CHOICE)
@@ -21744,7 +21745,9 @@ int CvCity::getThresholdSubtractions(YieldTypes eYield) const
 	if (kPlayer.isHuman())
 		iModifier += kPlayer.getHandicapInfo().getPopulationUnhappinessMod();
 	else
-		iModifier += kPlayer.getHandicapInfo().getAIUnhappinessPercent();
+		//glider1-balance AI gets same unhappiness thresholds as player
+		iModifier += kPlayer.getHandicapInfo().getPopulationUnhappinessMod();
+		//iModifier += kPlayer.getHandicapInfo().getAIUnhappinessPercent();
 
 	if (eYield == YIELD_FAITH)
 	{
@@ -21962,6 +21965,10 @@ int CvCity::getEmpireSizeMod() const
 
 	iBase += GetEmpireNeedsModifier() + GET_PLAYER(getOwner()).GetEmpireNeedsModifierGlobal();
 	if (iBase <= 0)
+		return 0;
+
+	//glider1-balance don't encourage fixing happiness during dark age
+	if (GC.getGame().isDarkAgeActive()) 
 		return 0;
 
 	return iBase;
